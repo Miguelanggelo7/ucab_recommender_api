@@ -21,8 +21,8 @@ class LinkedinSpider(scrapy.Spider):
         sleep(2)
         email_input = self.driver.find_element("id", "username")
         password_input = self.driver.find_element("id", "password")
-        email_input.send_keys('josemiguelsaad13@gmail.com')
-        password_input.send_keys('Jose27729212')
+        email_input.send_keys('miguelanggelo21@gmail.com')
+        password_input.send_keys('#MIG21uel')
         password_input.send_keys(Keys.RETURN)
         sleep(5)
 
@@ -40,24 +40,31 @@ class LinkedinSpider(scrapy.Spider):
         profile_content = self.driver.page_source
         soup = BeautifulSoup(profile_content, 'html.parser')
         
-        # Buscar el elemento que contiene la información del perfil
-        info_element = soup.find('div', {'class': 'inline-show-more-text inline-show-more-text--is-collapsed inline-show-more-text--is-collapsed-with-line-clamp full-width'})
-
-        # Extraer el texto del elemento
-        information = info_element.get_text(strip=True)
+        # Buscar el div con id "about" y verificar si existe
+        about_div = soup.find('div', {'id': 'about'})
+        if about_div:
+            # Extraer el texto del elemento si se encuentra el div "about"
+            info_element = soup.find('div', {'class': 'inline-show-more-text inline-show-more-text--is-collapsed inline-show-more-text--is-collapsed-with-line-clamp full-width'})
+            information = info_element.get_text(strip=True)
+        else:
+            # Si no se encontró el div "about", establecer information como una cadena vacía
+            information = ""
         
         # Buscar el div con id "experience" y luego obtener el section padre
         experience_div = soup.find('div', {'id': 'experience'})
-        parent_section = experience_div.find_parent('section')
-
-        # Buscar los elementos que contienen las experiencias dentro del section adecuado
-        experiences = []
-        if parent_section:
-            # Verificar que el span con la clase "visually-hidden" esté dentro del div adecuado
-            experience_items = parent_section.select('div.display-flex.align-items-center.mr1.t-bold span.visually-hidden')
-            for item in experience_items:
-                experience = item.get_text(strip=True)
-                experiences.append(experience)
+        if experience_div:
+            parent_section = experience_div.find_parent('section')
+            # Buscar los elementos que contienen las experiencias dentro del section adecuado
+            experiences = []
+            if parent_section:
+                # Verificar que el span con la clase "visually-hidden" esté dentro del div adecuado
+                experience_items = parent_section.select('div.display-flex.align-items-center.mr1.t-bold span.visually-hidden')
+                for item in experience_items:
+                    experience = item.get_text(strip=True)
+                    experiences.append(experience)
+        else:
+            # Si no se encontró el div con id "experience", establecer experiences como una lista vacía
+            experiences = []
         
         # Buscar el div con id "skills" y luego obtener el section padre
         skills_div = soup.find('div', {'id': 'skills'})
@@ -92,9 +99,7 @@ class LinkedinSpider(scrapy.Spider):
             'skills': skills
         }
 
-
         return result
-
         
     def closed(self, reason):
         self.driver.quit()
