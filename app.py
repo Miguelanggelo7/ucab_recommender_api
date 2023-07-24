@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def scrape_linkedin_endpoint():
     resultado = subprocess.run(
-        "scrapy crawl linkedin", shell=True, capture_output=True)
+        "scrapy runspider src/spiders/linkedinspider.py", shell=True)
 
     print(resultado)
     if resultado.returncode == 0:
