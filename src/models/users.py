@@ -1,16 +1,12 @@
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, Integer, String, ForeignKey
+from src.database.db import db
 
-Base = declarative_base()
-
-
-class User(Base):
+class User(db.Model):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    id_card = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    email = Column(String)
-    password = Column(String, nullable=False)
-    level_id = Column(Integer, ForeignKey("level.id"))
-    academic_records = relationship("UserAcademicRecord", backref="user")
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_card = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String)
+    password = db.Column(db.String, nullable=False)
+    level_id = db.Column(db.Integer, db.ForeignKey("levels.id"))
+    academic_records = db.relationship("UserAcademicRecord", backref="user")

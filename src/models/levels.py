@@ -1,13 +1,9 @@
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, Integer, String
+from src.database.db import db
 
-Base = declarative_base()
-
-
-class Level(Base):
+class Level(db.Model):
     __tablename__ = 'levels'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    users = relationship("User", backref="level")
-    courses = relationship("Course", backref="level")
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, nullable=False)
+    users = db.relationship("User", backref="level")
+    courses = db.relationship("Course", backref="level")
