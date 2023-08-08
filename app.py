@@ -15,6 +15,21 @@ from src.models.specialization_areas import SpecializationArea
 import subprocess
 from flask_cors import CORS
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from src.tasks.my_cron import run_spiders
+from apscheduler.schedulers.twisted import TwistedScheduler
+from scrapy import spiderloader
+from scrapy.utils import project
+from scrapy.crawler import CrawlerRunner
+from twisted.internet import reactor, defer
+from scrapy.utils.log import configure_logging
+
+configure_logging()
+scheduler = TwistedScheduler()
+scheduler.add_job(run_spiders, 'cron', hour=0, minute=0)
+scheduler.start()
+reactor.run()
+
 # Configura tu variable DATABASE_URL aquí directamente
 DATABASE_URL = 'postgresql://postgres:27729212@localhost:5432/tesisdb'
 
