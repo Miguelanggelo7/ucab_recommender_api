@@ -10,7 +10,7 @@ from src.models.skills import Skill
 from src.models.user_skills import UserSkill
 from src.models.user_specializations import UserSpecialization
 from src.models.user_preferences import UserPreference
-from src.models.specialization_areas import SpecializationArea
+from models.specializations import Specialization
 
 import subprocess
 from flask_cors import CORS
