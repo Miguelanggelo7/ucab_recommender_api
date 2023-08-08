@@ -26,7 +26,7 @@ from scrapy.utils.log import configure_logging
 
 configure_logging()
 scheduler = TwistedScheduler()
-scheduler.add_job(run_spiders, 'cron', hour=0, minute=0)
+scheduler.add_job(run_spiders, 'interval', days=1)
 scheduler.start()
 reactor.run()
 
