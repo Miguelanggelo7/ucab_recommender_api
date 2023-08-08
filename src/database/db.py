@@ -1,6 +1,10 @@
 from decouple import config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from flask_sqlalchemy import SQLAlchemy
+
+# Crea una instancia de SQLAlchemy
+metadata = SQLAlchemy().metadata
 
 
 def get_engine(user, password, host, port, db):

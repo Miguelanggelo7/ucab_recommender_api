@@ -1,13 +1,9 @@
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
+from src.database.db import db
 
-Base = declarative_base()
-
-
-class UserAcademicRecord(Base):
+class UserAcademicRecord(db.Model):
     __tablename__ = 'user_academic_records'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
-    grade = Column(Numeric)
-    user_id = Column(Integer, ForeignKey("user.id"))
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String)
+    grade = db.Column(db.Numeric)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
