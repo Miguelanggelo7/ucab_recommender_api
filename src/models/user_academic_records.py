@@ -11,4 +11,4 @@ class UserAcademicRecord(db.Model):
 
     # Relations
     user = db.relationship('User',
-                           back_populates='user_academic_records')
+                           back_populates='academic_records')

@@ -8,5 +8,5 @@ class Level(db.Model):
     name = db.Column(db.String, nullable=False)
 
     # Relations
-    users = db.relationship("User", back_populates="levels")
-    courses = db.relationship("Course", back_populates="levels")
+    users = db.relationship("User", back_populates="level")
+    courses = db.relationship("Course", back_populates="level")

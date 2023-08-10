@@ -9,13 +9,12 @@ class User(db.Model):
     id_card = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    level_id = db.Column(db.Integer, db.ForeignKey(
-        'levels.id'), nullable=False)
+    level_id = db.Column(db.Integer, db.ForeignKey('levels.id'))
 
     # Relations
     level = db.relationship('Level', back_populates='users')
     academic_records = db.relationship(
-        'UserAcademicRecord', back_populates='users')
+        'UserAcademicRecord', back_populates='user')
     specializations = db.relationship(
         'Specialization', secondary='user_specializations', back_populates='users')
     skills = db.relationship(

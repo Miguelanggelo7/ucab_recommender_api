@@ -2,6 +2,9 @@ import scrapy
 from urllib.parse import urljoin
 from src.database.db import db, get_session
 from src.models.courses import Course
+from src.models.levels import Level
+from sqlalchemy import select
+
 
 class EmoviesSpider(scrapy.Spider):
     name = 'emovies'
@@ -10,7 +13,8 @@ class EmoviesSpider(scrapy.Spider):
 
     def parse(self, response):
         # Obtener los elementos div.course__inner de la página actual
-        div_elements = response.xpath('//div[contains(@class, "course__inner")]')
+        div_elements = response.xpath(
+            '//div[contains(@class, "course__inner")]')
 
         for div_element in div_elements:
             try:
@@ -18,7 +22,8 @@ class EmoviesSpider(scrapy.Spider):
                 titulo = div_element.xpath('.//h3/text()').get()
 
                 # Obtener los elementos div.details__item dentro del div.course__inner
-                details_elements = div_element.xpath('.//div[contains(@class, "details__item")]')
+                details_elements = div_element.xpath(
+                    './/div[contains(@class, "details__item")]')
 
                 # Inicializar variables para los campos de información
                 university = ""
@@ -31,8 +36,10 @@ class EmoviesSpider(scrapy.Spider):
                 # Iterar sobre los elementos div.details__item
                 for details_element in details_elements:
                     # Obtener el texto dentro de la etiqueta strong
-                    strong_text = details_element.xpath('.//sup[@class="light"]/text()').get()
-                    text = details_element.xpath('normalize-space(string(.//strong))').get()
+                    strong_text = details_element.xpath(
+                        './/sup[@class="light"]/text()').get()
+                    text = details_element.xpath(
+                        'normalize-space(string(.//strong))').get()
 
                     # Identificar el campo y asignar el valor correspondiente
                     if "IES / HEI" in strong_text:
@@ -79,13 +86,15 @@ class EmoviesSpider(scrapy.Spider):
         content_elements = response.css('div#acc-1 div.contents *').getall()
 
         # Concatenar y limpiar el texto de todos los elementos
-        requirements = ' '.join(response.xpath('//div[@id="acc-1"]/div[contains(@class, "contents")]//text()').getall()).strip()
+        requirements = ' '.join(response.xpath(
+            '//div[@id="acc-1"]/div[contains(@class, "contents")]//text()').getall()).strip()
 
         # Obtener el contenido dentro del div de descripción del curso
         description_elements = response.xpath('//div[@class="text"]/node()')
 
         # Concatenar y limpiar el texto de todos los elementos
-        description = ' '.join(description_elements.xpath('string()').getall()).strip()
+        description = ' '.join(
+            description_elements.xpath('string()').getall()).strip()
 
         # Obtener el objeto de la respuesta original
         objeto = response.meta['objeto']
@@ -103,9 +112,12 @@ class EmoviesSpider(scrapy.Spider):
 
         session = get_session()
 
+        print("LALALALLALALALALALLA")
         for objeto in self.objetos:
-
             if True:
+                statement = select(Level).filter_by(name="pregrado")
+                level = session.scalars(statement).first()
+
                 course = Course(
                     title=objeto['title'],
                     begin_date=objeto['startDate'],
@@ -113,7 +125,7 @@ class EmoviesSpider(scrapy.Spider):
                     university=objeto['university'],
                     url=objeto['url'],
                     career=objeto['career'],
-                    level_id=1
+                    level_id=level.id
                 )
 
                 # # Determinar level_id basado en el tipo de curso
@@ -128,6 +140,6 @@ class EmoviesSpider(scrapy.Spider):
                 # if level:
                 #     course.level = level
 
-                db.session.add(course)
+                session.add(course)
 
-        db.session.commit()
+        session.commit()
