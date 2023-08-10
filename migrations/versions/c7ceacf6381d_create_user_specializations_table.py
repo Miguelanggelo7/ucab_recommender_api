@@ -24,7 +24,7 @@ def upgrade() -> None:
                     sa.ForeignKeyConstraint(['user_id'], [
                                             'users.id'], name='user_specializations_fk_user_id', onupdate='CASCADE', ondelete='CASCADE'),
                     sa.ForeignKeyConstraint(['specialization_id'], [
-                                            'specialization.id'], name='user_specializations_fk_specialization_id', onupdate='CASCADE', ondelete='CASCADE'),
+                                            'specializations.id'], name='user_specializations_fk_specialization_id', onupdate='CASCADE', ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint(
                         "user_id", "specialization_id", name='user_specializations_pkey')
                     )
