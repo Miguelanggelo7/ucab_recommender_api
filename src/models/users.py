@@ -1,5 +1,6 @@
 from src.database.db import db
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -8,10 +9,17 @@ class User(db.Model):
     id_card = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    level_id = db.Column(db.Integer, db.ForeignKey('levels.id'), nullable=False)
+    level_id = db.Column(db.Integer, db.ForeignKey(
+        'levels.id'), nullable=False)
 
+    # Relations
     level = db.relationship('Level', back_populates='users')
-    specializations = db.relationship('UserSpecialization', back_populates='users')
+    academic_records = db.relationship(
+        'UserAcademicRecord', back_populates='users')
+    specializations = db.relationship(
+        'Specialization', secondary='user_specializations', back_populates='users')
+    skills = db.relationship(
+        'Skill', secondary='user_skills', back_populates='users')
 
     def __init__(self, name, id_card, email, password, level_id):
         self.name = name
