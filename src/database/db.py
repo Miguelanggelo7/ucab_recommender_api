@@ -4,7 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 
 # Crea una instancia de SQLAlchemy
-metadata = SQLAlchemy().metadata
+db = SQLAlchemy()
+metadata = db.metadata
 
 
 def get_engine(user, password, host, port, db):

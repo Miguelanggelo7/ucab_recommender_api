@@ -3,6 +3,7 @@ import scrapy
 class AujsalSpider(scrapy.Spider):
     name = 'aujsal'
     start_urls = ['https://cursos.leon.uia.mx/intercambiovirtual/index.php']
+    items = []
 
     def parse(self, response):
         for countries in response.css('#accordionExample > .accordion-item'):
@@ -23,4 +24,11 @@ class AujsalSpider(scrapy.Spider):
                         'url': courses.css('td a::attr(href)').get()
                     }
 
-                    yield item
+                    # Almacenar el objeto en la lista self.objetos
+                    self.items.append(item)
+
+                    yield item      
+
+    def closed(self, reason):
+        for item in self.items:  # Corregido aquí
+            print(item, flush=True)

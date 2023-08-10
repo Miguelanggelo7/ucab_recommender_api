@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 class EmoviesSpider(scrapy.Spider):
     name = 'emovies'
     start_urls = ['https://emovies.oui-iohe.org/nuestros-cursos/']
+    objetos = []  # Define the attribute
 
     def parse(self, response):
         # Obtener los elementos div.course__inner de la página actual
@@ -92,4 +93,11 @@ class EmoviesSpider(scrapy.Spider):
         objeto['requirements'] = requirements
         objeto['description'] = description
 
+        # Almacenar el objeto en la lista self.objetos
+        self.objetos.append(objeto)
+
         yield objeto
+
+    def closed(self, reason):
+        for objeto in self.objetos:  # Corregido aquí
+            print(objeto, flush=True)
