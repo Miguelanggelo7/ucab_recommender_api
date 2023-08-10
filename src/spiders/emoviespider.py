@@ -1,6 +1,7 @@
 import scrapy
 from urllib.parse import urljoin
-
+from src.database.db import db, get_session
+from src.models.courses import Course
 
 class EmoviesSpider(scrapy.Spider):
     name = 'emovies'
@@ -99,5 +100,34 @@ class EmoviesSpider(scrapy.Spider):
         yield objeto
 
     def closed(self, reason):
-        for objeto in self.objetos:  # Corregido aquí
-            print(objeto, flush=True)
+
+        session = get_session()
+
+        for objeto in self.objetos:
+
+            if True:
+                course = Course(
+                    title=objeto['title'],
+                    begin_date=objeto['startDate'],
+                    end_date=objeto['endDate'],
+                    university=objeto['university'],
+                    url=objeto['url'],
+                    career=objeto['career'],
+                    level_id=1
+                )
+
+                # # Determinar level_id basado en el tipo de curso
+                # if 'Pregrado' in new_course['type']:
+                #     level_id = 1
+                # elif 'Postgrado' in new_course['type']:
+                #     level_id = 2
+                # else:
+                #     level_id = 3
+
+                # level = Level.query.get(level_id)
+                # if level:
+                #     course.level = level
+
+                db.session.add(course)
+
+        db.session.commit()

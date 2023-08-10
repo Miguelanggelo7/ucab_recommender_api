@@ -8,7 +8,6 @@ from src.routes.auth import auth_blueprint
 from src.models.skills import Skill
 from src.models.user_skills import UserSkill
 from src.models.user_specializations import UserSpecialization
-from src.models.user_preferences import UserPreference
 from src.models.specializations import Specialization
 
 import subprocess

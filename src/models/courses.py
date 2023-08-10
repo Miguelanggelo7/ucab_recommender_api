@@ -13,6 +13,8 @@ class Course(db.Model):
     university = db.Column(db.String)
     requirements = db.Column(db.Text)
     level_id = db.Column(db.Integer, db.ForeignKey("levels.id"))
+    url = db.Column(db.Text)
+    career = db.Column(db.String)
 
     # Relations
     level = db.relationship('Level', back_populates='courses')
