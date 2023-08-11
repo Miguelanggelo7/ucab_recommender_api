@@ -10,6 +10,7 @@ class EmoviesSpider(scrapy.Spider):
     name = 'emovies'
     start_urls = ['https://emovies.oui-iohe.org/nuestros-cursos/']
     objetos = []  # Define the attribute
+    url_set = set()
 
     def parse(self, response):
         # Obtener los elementos div.course__inner de la página actual
@@ -55,6 +56,10 @@ class EmoviesSpider(scrapy.Spider):
 
                 # Obtener el href de la etiqueta a.button--white
                 url = div_element.css('a.button--white::attr(href)').get()
+
+                if url:
+                    self.url_set.add(url)
+
 
                 # Crear el objeto con la información
                 objeto = {
@@ -112,10 +117,27 @@ class EmoviesSpider(scrapy.Spider):
 
         session = get_session()
 
-        print("LALALALLALALALALALLA")
         for objeto in self.objetos:
-            if True:
-                statement = select(Level).filter_by(name="pregrado")
+
+            url = objeto['url']
+
+            # Verificar si el curso ya existe en la base de datos por su URL
+            existing_course = session.query(Course).filter_by(url=url).first()
+
+            if (url in self.url_set) and (existing_course is None):
+
+                self.url_set.remove(url)  # Remover el URL del conjunto para evitar duplicados
+
+                course_type = objeto['type'].lower()  # Convertir a minúsculas
+
+                if "pregrado" in course_type:
+                    nameLevel = "pregrado"
+                elif "posgrado" in course_type:
+                    nameLevel = "posgrado"
+                else:
+                    nameLevel = "formacion continua"
+
+                statement = select(Level).filter_by(name=nameLevel)
                 level = session.scalars(statement).first()
 
                 course = Course(
@@ -127,18 +149,6 @@ class EmoviesSpider(scrapy.Spider):
                     career=objeto['career'],
                     level_id=level.id
                 )
-
-                # # Determinar level_id basado en el tipo de curso
-                # if 'Pregrado' in new_course['type']:
-                #     level_id = 1
-                # elif 'Postgrado' in new_course['type']:
-                #     level_id = 2
-                # else:
-                #     level_id = 3
-
-                # level = Level.query.get(level_id)
-                # if level:
-                #     course.level = level
 
                 session.add(course)
 
