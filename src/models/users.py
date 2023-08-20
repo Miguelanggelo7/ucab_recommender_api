@@ -9,6 +9,7 @@ class User(db.Model):
     id_card = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    session_token = db.Column(db.Text, default=None)
     level_id = db.Column(db.Integer, db.ForeignKey('levels.id'))
 
     # Relations
