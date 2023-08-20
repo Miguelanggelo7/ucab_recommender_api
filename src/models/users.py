@@ -21,9 +21,10 @@ class User(db.Model):
     skills = db.relationship(
         'Skill', secondary='user_skills', back_populates='users')
 
-    def __init__(self, name, id_card, email, password, level_id):
+    def __init__(self, name, id_card, email, password, level_id, session_token):
         self.name = name
         self.id_card = id_card
         self.email = email
         self.password = password
         self.level_id = level_id
+        self.session_token = session_token

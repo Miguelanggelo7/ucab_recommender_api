@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt, check_password_hash
 from src.models.users import User
+from src.models.skills import Skill
+from src.models.specializations import Specialization
 from src.database.db import db
 from src.routes.linkedin_spider import run_linkedin_spider
 from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt_identity
@@ -17,6 +19,8 @@ def signup():
     email = data.get('email')
     password = data.get('password')
     level_id = data.get('level_id')
+    skills_id = data.get('skills')
+    specializations_id = data.get('specializations')
 
     # Verificar si ya existe un usuario con la misma cédula o email
     existing_user_by_id_card = User.query.filter_by(id_card=id_card).first()
@@ -38,6 +42,16 @@ def signup():
 
     # Guardar el usuario en la base de datos
     db.session.add(user)
+
+    if skills_id:
+        skills = Skill.query.filter(Skill.id.in_(skills_id)).all()
+        user.skills.extend(skills)
+
+    if specializations_id:
+        specializations = Specialization.query.filter(
+            Specialization.id.in_(specializations_id)).all()
+        user.specializations.extend(specializations)
+
     try:
         db.session.commit()
 
