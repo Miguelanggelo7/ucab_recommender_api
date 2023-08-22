@@ -19,8 +19,8 @@ def signup():
     email = data.get('email')
     password = data.get('password')
     level_id = data.get('level_id')
-    skills_id = data.get('skills')
-    specializations_id = data.get('specializations')
+    skills_array = data.get('skills') or []
+    specializations_array = data.get('specializations') or []
 
     # Verificar si ya existe un usuario con la misma cédula o email
     existing_user_by_id_card = User.query.filter_by(id_card=id_card).first()
@@ -43,14 +43,26 @@ def signup():
     # Guardar el usuario en la base de datos
     db.session.add(user)
 
-    if skills_id:
-        skills = Skill.query.filter(Skill.id.in_(skills_id)).all()
-        user.skills.extend(skills)
+    for skill_name in skills_array:
+        skill_name = skill_name.strip().lower()
+        skill = Skill.query.filter_by(name=skill_name).first()
 
-    if specializations_id:
-        specializations = Specialization.query.filter(
-            Specialization.id.in_(specializations_id)).all()
-        user.specializations.extend(specializations)
+        if not skill:
+            skill = Skill(name=skill_name)
+            db.session.add(skill)
+
+        user.skills.append(skill)
+
+    for specialization_name in specializations_array:
+        specialization_name = specialization_name.strip().lower()
+        specialization = Specialization.query.filter_by(
+            name=specialization_name).first()
+
+        if not specialization:
+            specialization = Specialization(name=specialization_name)
+            db.session.add(specialization)
+
+        user.specializations.append(specialization)
 
     try:
         db.session.commit()
