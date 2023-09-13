@@ -1,19 +1,10 @@
 from flask import Flask
 from src.routes.auth import auth_blueprint
-from src.database.db import get_session
 from flask_cors import CORS
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from src.tasks.my_cron import run_spiders
-from apscheduler.schedulers.twisted import TwistedScheduler
-from scrapy import spiderloader
-from scrapy.utils import project
-from scrapy.crawler import CrawlerRunner
-from twisted.internet import reactor, defer
-from scrapy.utils.log import configure_logging
-from sqlalchemy import select
 from flask_jwt_extended import JWTManager
 from decouple import config
 from src.routes.auth import auth_blueprint
+from src.routes.users import users_blueprint
 from src.database.db import db
 from decouple import config
 
@@ -22,6 +13,10 @@ from src.models.specializations import Specialization
 from src.models.skills import Skill
 from src.models.user_specializations import UserSpecialization
 from src.models.user_skills import UserSkill
+from src.models.users import User
+from src.models.levels import Level
+from src.models.courses import Course
+
 
 app = Flask(__name__)
 
@@ -58,6 +53,7 @@ db.init_app(app)
 
 # Routes
 app.register_blueprint(auth_blueprint)
+app.register_blueprint(users_blueprint)
 
 if __name__ == '__main__':
     app.run(debug=True)

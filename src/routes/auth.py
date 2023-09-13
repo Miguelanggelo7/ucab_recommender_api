@@ -4,7 +4,6 @@ from src.models.users import User
 from src.models.skills import Skill
 from src.models.specializations import Specialization
 from src.database.db import db
-from src.routes.linkedin_spider import run_linkedin_spider
 from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt_identity
 
 auth_blueprint = Blueprint('auth', __name__)
