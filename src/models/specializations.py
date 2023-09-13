@@ -10,6 +10,8 @@ class Specialization(db.Model):
     # Relations
     users = db.relationship(
         'User', secondary='user_specializations', back_populates='specializations')
+    graduate_users = db.relationship(
+        'GraduateUser', secondary='graduate_user_specializations', back_populates='specializations')
 
     def __init__(self, name):
         self.name = name

@@ -8,6 +8,6 @@ class GraduateUser(db.Model):
 
     # Relations
     specializations = db.relationship(
-        'GraduateUserSpecialization', secondary='graduate_user_specializations', back_populates='graduate_users')
+        'Specialization', secondary='graduate_user_specializations', back_populates='graduate_users')
     skills = db.relationship(
-        'GraduateUserSkill', secondary='graduate_user_skills', back_populates='graduate_users')
+        'Skill', secondary='graduate_user_skills', back_populates='graduate_users')

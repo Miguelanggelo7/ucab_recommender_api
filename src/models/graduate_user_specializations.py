@@ -9,6 +9,6 @@ class GraduateUserSpecialization(db.Model):
     specialization_id = db.Column(db.Integer, db.ForeignKey(
         'specializations.id'), primary_key=True)
 
-    def __init__(self, user_id, specialization_id):
-        self.user_id = user_id
+    def __init__(self, graduate_user_id, specialization_id):
+        self.graduate_user_id = graduate_user_id
         self.specialization_id = specialization_id

@@ -17,6 +17,9 @@ from src.models.users import User
 from src.models.levels import Level
 from src.models.courses import Course
 
+from src.models.graduate_user_skills import GraduateUserSkill
+from src.models.graduate_user_specializations import GraduateUserSpecialization
+
 
 app = Flask(__name__)
 
