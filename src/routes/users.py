@@ -14,6 +14,8 @@ from unidecode import unidecode
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+from src.utils.careers import careers
+from src.utils.taxonomy import taxonomy
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -93,10 +95,17 @@ def get_clusters_by_users():
 @users_blueprint.route('/content_recomendation', methods=['GET'])
 def get_content_recomendation():
     token = request.headers.get('Authorization')
+    courses = Course.query.all()
 
     user = User.query.filter_by(session_token=token).first()
+    user_specializations = []
+    user_skills = []
 
-    courses = Course.query.all()
+    for skill in user.skills:
+        user_skills.append(skill.name)
+
+    for specialization in user.specializations:
+        user_specializations.append(specialization.name)
 
     # courses_data = []
     # for course in courses:
@@ -116,60 +125,67 @@ def get_content_recomendation():
 
     # Crear documentos de texto para los vectores del usuario
     doc_user_skills = nlp(" ".join(user_skills))
-    doc_user_expertise_areas = nlp(" ".join(user_expertise_areas))
-    doc_user_career = nlp(" ".join(user_career))
+    doc_user_expertise_areas = nlp(" ".join(user_specializations))
+    doc_user_career = nlp(" ".join(careers))
 
     # Calcular el vector promedio del usuario
-    user_vector = np.mean([doc_user_skills.vector, doc_user_expertise_areas.vector, doc_user_career.vector], axis=0)
+    user_vector = np.mean(
+        [doc_user_skills.vector, doc_user_expertise_areas.vector, doc_user_career.vector], axis=0)
 
     # Calcular la similitud semántica y ordenar los cursos
     for course in courses:
-        course_title = course["title"]
-        course_career = course["career"]
-        course_description = course.get("description", "")
-        course_requirements = course.get("requirements", "")
-        
+        course_title = course.title
+        course_career = course.career
+        # course_description = course.get("description", "")
+        course_requirements = course.requirements
+
         doc_course_title = nlp(course_title)
         doc_course_career = nlp(course_career)
-        doc_course_description = nlp(course_description)
+        # doc_course_description = nlp(course_description)
         doc_course_requirements = nlp(course_requirements)
-        
+
         # Combinar título, carrera, descripción y requisitos en una cadena para el curso
-        combined_text = f"{course_title} {course_career} {course_description} {course_requirements}"
+        # combined_text = f"{course_title} {course_career} {course_description} {course_requirements}"
+        combined_text = f"{course_title} {course_career} {course_requirements}"
         doc_combined_text = nlp(combined_text)
-        
+
         # Calcular el vector para el texto combinado
         course_vector = doc_combined_text.vector
-        
+
         # Calcular la similitud semántica entre el usuario y el curso
-        similarity_text = np.dot(user_vector, course_vector) / (np.linalg.norm(user_vector) * np.linalg.norm(course_vector))
-        
+        similarity_text = np.dot(user_vector, course_vector) / \
+            (np.linalg.norm(user_vector) * np.linalg.norm(course_vector))
+
         # Calcular la distancia jerárquica mínima para cada habilidad del usuario
-        similarities_taxonomy = [hierarchical_distance(taxonomy, interest, combined_text) for interest in user_skills + user_expertise_areas]
-        
+        similarities_taxonomy = [hierarchical_distance(
+            taxonomy, interest, combined_text) for interest in user_skills + user_specializations]
+
         # Verificar si la carrera del curso está en las carreras del usuario
-        if unidecode(course_career.lower()) in user_career:
+        if unidecode(course_career.lower()) in careers:
             # Tomar el valor mínimo de las similitudes jerárquicas
             similarity_taxonomy = min(similarities_taxonomy)
         else:
             # Asignar 1 si la carrera del curso no coincide con la del usuario
             similarity_taxonomy = 1
-        
+
         # Calcular la similitud total ponderada
-        total_similarity = 0.6 * similarity_text + 0.4 * (1 - similarity_taxonomy)
+        total_similarity = 0.6 * similarity_text + \
+            0.4 * (1 - similarity_taxonomy)
         # total_similarity = (1 - similarity_taxonomy)
 
         course["total_similarity"] = total_similarity
 
     # Ordenar los cursos por similitud en orden descendente
-    sorted_courses = sorted(courses, key=lambda x: x["total_similarity"], reverse=True)
+    sorted_courses = sorted(
+        courses, key=lambda x: x["total_similarity"], reverse=True)
 
     # Imprimir los cursos ordenados por similitud
     for course in sorted_courses:
-        print(f"Título: {course['title']}, Similaridad Total: {course['total_similarity']:.4f}")
+        print(
+            f"Título: {course['title']}, Similaridad Total: {course['total_similarity']:.4f}")
 
+    return jsonify({'data': sorted_courses})
 
-    
 
 def remove_special_chars(text):
     # Remover caracteres especiales y convertir a minúsculas
@@ -177,6 +193,7 @@ def remove_special_chars(text):
     # Eliminar espacios en blanco adicionales
     text = ' '.join(text.split())
     return text
+
 
 def find_taxonomy_substring(input_string, taxonomy):
     input_string = remove_special_chars(input_string)
@@ -195,26 +212,31 @@ def find_taxonomy_substring(input_string, taxonomy):
                     return sub_subcategory
                 elif "(" in sub_subcategory and ")" in sub_subcategory:
                     # Si sub_subcategory contiene paréntesis, verificar si su versión abreviada entre paréntesis coincide
-                    sub_subcategory_abbr = re.search(r'\((.*?)\)', sub_subcategory).group(1)
+                    sub_subcategory_abbr = re.search(
+                        r'\((.*?)\)', sub_subcategory).group(1)
                     if sub_subcategory_abbr and sub_subcategory_abbr in input_string:
                         return sub_subcategory
     return None
+
 
 def title_contains_taxonomy_substring(input_string, taxonomy):
     input_string = remove_special_chars(input_string)
     result = find_taxonomy_substring(input_string, taxonomy)
     return result is not None
 
+
 def find_depth_and_parent(node, target, parent=None, depth=0):
     if isinstance(node, dict):
         if target in node:
             return depth, parent
         for key, value in node.items():
-            result = find_depth_and_parent(value, target, parent=key, depth=depth + 1)
+            result = find_depth_and_parent(
+                value, target, parent=key, depth=depth + 1)
             if result[0] is not None:
                 return result
 
     return None, None
+
 
 def find_taxonomy_parent(word, taxonomy):
     # Manejar el caso especial en el que word es igual a "ingenieria en informatica"
@@ -230,6 +252,7 @@ def find_taxonomy_parent(word, taxonomy):
                 result = find_taxonomy_parent(word, children)
                 if result:
                     return result
+
 
 def calculate_distance(taxonomy, str1, str2):
     parent1 = find_taxonomy_parent(str1, taxonomy)
@@ -249,9 +272,12 @@ def calculate_distance(taxonomy, str1, str2):
 
     return 1 if distance > 1 else distance
 
+
 def hierarchical_distance(taxonomy, concept1, concept2):
-    concept1_lower = unidecode(concept1.lower())  # Convertir a minúsculas y quitar acentos
-    concept2_lower = unidecode(concept2.lower())  # Convertir a minúsculas y quitar acentos
+    # Convertir a minúsculas y quitar acentos
+    concept1_lower = unidecode(concept1.lower())
+    # Convertir a minúsculas y quitar acentos
+    concept2_lower = unidecode(concept2.lower())
 
     if concept1_lower == concept2_lower:
         return 0.0
@@ -270,6 +296,7 @@ def hierarchical_distance(taxonomy, concept1, concept2):
         if distance is not None:
             return distance
         else:
-            print(f"No se encontraron '{result1}' y '{result2}' en la jerarquía.")
-    
+            print(
+                f"No se encontraron '{result1}' y '{result2}' en la jerarquía.")
+
     return 0.6
