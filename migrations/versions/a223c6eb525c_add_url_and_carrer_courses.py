@@ -19,9 +19,11 @@ depends_on = None
 def upgrade():
     op.add_column('courses', sa.Column('url', sa.Text, nullable=False))
     op.create_unique_constraint('uq_courses_url', 'courses', ['url'])
-    op.add_column('courses', sa.Column('career', sa.String(length=255), nullable=False))
+    op.add_column('courses', sa.Column(
+        'career', sa.String(length=255), nullable=False))
+
 
 def downgrade():
-    op.drop_constraint('uq_coursesurl', 'courses', type='unique')
+    op.drop_constraint('uq_courses_url', 'courses', type='unique')
     op.drop_column('courses', 'url')
-    op.drop_column('courses', 'career') 
+    op.drop_column('courses', 'career')
