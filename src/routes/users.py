@@ -107,18 +107,18 @@ def get_content_recomendation():
     for specialization in user.specializations:
         user_specializations.append(specialization.name)
 
-    # courses_data = []
-    # for course in courses:
-    #     data = {
-    #         "title": course.title,
-    #         "career": courses.career,
-    #         "id": "",
-    #         # TODO: get description
-    #         "description": courses.requirements,
-    #         "requirements": courses.requirements
-    #     }
+    courses_data = []
+    for course in courses:
+        data = {
+            "title": course.title,
+            "career": course.career,
+            "id": "",
+            # TODO: get description
+            "description": course.requirements,
+            "requirements": course.requirements
+        }
 
-    #     courses_data.append(data)
+        courses_data.append(data)
 
     # Cargar el modelo de spaCy
     nlp = spacy.load("es_core_news_md")
@@ -133,16 +133,21 @@ def get_content_recomendation():
         [doc_user_skills.vector, doc_user_expertise_areas.vector, doc_user_career.vector], axis=0)
 
     # Calcular la similitud semántica y ordenar los cursos
-    for course in courses:
-        course_title = course.title
-        course_career = course.career
+    for course in courses_data:
+        course_title = course["title"]
+        course_career = course["career"]
         # course_description = course.get("description", "")
-        course_requirements = course.requirements
+        course_requirements = course["requirements"]
 
         doc_course_title = nlp(course_title)
         doc_course_career = nlp(course_career)
         # doc_course_description = nlp(course_description)
-        doc_course_requirements = nlp(course_requirements)
+
+        if course_requirements is not None:
+            doc_course_requirements = nlp(course_requirements)
+
+        else:
+            print(f"Los requisitos del curso '{course_title}' son None. Se omite.")
 
         # Combinar título, carrera, descripción y requisitos en una cadena para el curso
         # combined_text = f"{course_title} {course_career} {course_description} {course_requirements}"
@@ -177,7 +182,7 @@ def get_content_recomendation():
 
     # Ordenar los cursos por similitud en orden descendente
     sorted_courses = sorted(
-        courses, key=lambda x: x["total_similarity"], reverse=True)
+        courses_data, key=lambda x: x["total_similarity"], reverse=True)
 
     # Imprimir los cursos ordenados por similitud
     for course in sorted_courses:
