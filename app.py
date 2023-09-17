@@ -20,6 +20,10 @@ from src.models.courses import Course
 from src.models.graduate_user_skills import GraduateUserSkill
 from src.models.graduate_user_specializations import GraduateUserSpecialization
 
+from scrapy.utils.log import configure_logging
+from apscheduler.schedulers.twisted import TwistedScheduler
+from src.tasks.my_cron import run_spiders
+from twisted.internet import reactor
 
 app = Flask(__name__)
 

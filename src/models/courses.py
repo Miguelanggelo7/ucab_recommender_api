@@ -10,6 +10,7 @@ class Course(db.Model):
     begin_date = db.Column(db.String)
     # Assuming the actual date type is handled elsewhere.
     end_date = db.Column(db.String)
+    description = db.Column(db.Text)
     university = db.Column(db.String)
     requirements = db.Column(db.Text)
     level_id = db.Column(db.Integer, db.ForeignKey("levels.id"))
