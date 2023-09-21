@@ -79,9 +79,9 @@ def signup():
         return jsonify({'error': 'Error al registrar el usuario', 'details': str(e)}), 500
 
 
-@auth_blueprint.route('/signin', methods=['GET'])
+@auth_blueprint.route('/signin', methods=['POST'])
 def signin():
-    data = request.json
+    data = request.get_json()
     email = data.get('email')
     password = data.get('password')
     user = User.query.filter_by(email=email).first()
@@ -118,3 +118,25 @@ def logout():
         db.session.commit()
         return jsonify({"message": "Logout exitoso"})
     return jsonify({"error": "Token inválido"}), 401
+
+@auth_blueprint.route('/get_user', methods=['GET'])
+@jwt_required()  # Esta decoración requiere que el usuario esté autenticado con un token válido
+def get_user():
+    # Obtiene la identidad (en este caso, el id_card) del token JWT
+    current_user_id_card = get_jwt_identity()
+
+    # Busca al usuario en la base de datos por su id_card
+    user = User.query.filter_by(id_card=current_user_id_card).first()
+
+    if user:
+        # Si se encuentra el usuario, devolvemos sus datos en formato JSON
+        user_json = {
+            "name": user.name,
+            "id_card": user.id_card,
+            "email": user.email,
+            "level": user.level.name
+        }
+        return jsonify({"user": user_json}), 200
+    else:
+        # Si el usuario no se encuentra, devolvemos un error 404 (no encontrado)
+        return jsonify({"error": "Usuario no encontrado"}), 404
