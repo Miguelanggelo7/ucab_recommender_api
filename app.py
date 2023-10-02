@@ -25,6 +25,9 @@ from apscheduler.schedulers.twisted import TwistedScheduler
 from src.tasks.my_cron import run_spiders
 from twisted.internet import reactor
 
+from src.routes.courses import courses_blueprint
+
+
 app = Flask(__name__)
 
 
@@ -61,6 +64,8 @@ db.init_app(app)
 # Routes
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(users_blueprint)
+app.register_blueprint(courses_blueprint)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
