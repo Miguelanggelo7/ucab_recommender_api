@@ -31,11 +31,11 @@ from src.routes.courses import courses_blueprint
 app = Flask(__name__)
 
 
-# configure_logging()
-# scheduler = TwistedScheduler()
-# scheduler.add_job(run_spiders, 'interval', seconds=30)
-# scheduler.start()
-# reactor.run()
+configure_logging()
+scheduler = TwistedScheduler()
+scheduler.add_job(run_spiders, 'interval', seconds=300)
+scheduler.start()
+reactor.run()
 
 
 # with app.app_context():
