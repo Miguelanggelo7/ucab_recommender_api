@@ -1,9 +1,9 @@
 from sqlalchemy import func
-from models.graduate_users import GraduateUser
-from models.skills import Skill
-from models.specializations import Specialization
-from models.user_likes import UserLikes
-from models.users import User
+from src.models.graduate_users import GraduateUser
+from src.models.skills import Skill
+from src.models.specializations import Specialization
+from src.models.user_likes import UserLikes
+from src.models.users import User
 from src.models.courses import Course
 import numpy as np
 import spacy
@@ -14,7 +14,7 @@ from src.utils.content_recomendation import hierarchical_distance
 from sklearn.cluster import KMeans
 from sklearn.cluster import KMeans
 
-from utils.collaborative_filtering import binary_sub, binary_sum
+from src.utils.collaborative_filtering import binary_sub, binary_sum
 
 N_CLUSTERS = 5
 
@@ -30,7 +30,7 @@ def content_filtering_process(user_skills, user_specializations):
             "career": course.career,
             "id": course.id,
             "description": course.description,
-            "requirements": course.requirements
+            "requirements": course.requirements,
         }
 
         courses_data.append(data)
@@ -79,10 +79,10 @@ def content_filtering_process(user_skills, user_specializations):
             0.4 * (1 - similarity_taxonomy)
         # total_similarity = (1 - similarity_taxonomy)
 
-        course["total_similarity"] = total_similarity
+        course["similarity"] = total_similarity
 
     sorted_courses = sorted(
-        courses_data, key=lambda x: x["total_similarity"], reverse=True)
+        courses_data, key=lambda x: x["similarity"], reverse=True)
     return sorted_courses
 
 
@@ -199,16 +199,44 @@ def collavorative_based_in_liked_courses(current_user, skills, specializations):
         .group_by(UserLikes.course_id)\
         .order_by(func.count(UserLikes.course_id).desc()).all()
 
-    # min_count = min(like.count for like in likes)
-    # max_count = max(like.count for like in likes)
+    min_count = min(like.count for like in likes)
+    max_count = max(like.count for like in likes)
 
     courses_data = []
     for item in likes:
+        course = Course.query.get(item.course_id)
         data = {
-            "course": Course.query.get(item.course_id),
+            "title": course.title,
+            "career": course.career,
+            "id": course.id,
+            "description": course.description,
+            "requirements": course.requirements,
             "count": item.count
         }
         courses_data.append(data)
+
+    repetitions_counts = [course['count']
+                          for course in courses_data]
+    if all(count == repetitions_counts[0] for count in repetitions_counts):
+        for course in courses_data:
+            course['similarity'] = 1
+    else:
+        # Calcular el intervalo de similitud
+        interval = (1 - 0.7) / (max_count -
+                                min_count) if max_count != min_count else 0
+
+        # Asignar similitud a cada curso
+        for course in courses_data:
+            repetitions_count = course['count']
+            course['similarity'] = 0.7 + \
+                (repetitions_count - min_count) * interval
+
+    # Ordenar los cursos por similitud de mayor a menor
+    courses_data = sorted(
+        courses_data, key=lambda x: x['similarity'], reverse=True)
+
+    for item in courses_data:
+        del item["count"]
 
     return courses_data
 
@@ -227,3 +255,55 @@ def content_filtering(current_user):
         user_skills, user_specializations)
 
     return sorted_courses
+
+
+def merge_content_filtering_with_graduate_users(current_user, skills, specializations):
+    content_recommendation = content_filtering(current_user)
+    graduate_users_recommendation = collaborative_based_in_graduate_users(
+        current_user, skills, specializations)
+
+    courses = Course.query.all()
+    courses_data = []
+    for course in courses:
+        content_item = next(
+            (item for item in content_recommendation if item["id"] == course.id), None)
+        graduate_users_item = next(
+            (item for item in graduate_users_recommendation if item["id"] == course.id), None)
+
+        data = dict(content_item)
+        data["similarity"] = (content_item["similarity"] +
+                              graduate_users_item["similarity"]) / 2
+        courses_data.append(data)
+
+    courses_data = sorted(
+        courses_data, key=lambda x: x['similarity'], reverse=True)
+
+    return courses_data
+
+
+def merge_courses(current_user, skills, specializations):
+    merged_courses = {}
+    content_and_graduate_users_recommendation = merge_content_filtering_with_graduate_users(
+        current_user, skills, specializations)
+    courses_liked_recommendation = collavorative_based_in_liked_courses(
+        current_user, skills, specializations)
+
+    # Agregar cursos del primer array al diccionario
+    for course in content_and_graduate_users_recommendation:
+        id = course['id']
+        if id not in merged_courses or course['similarity'] > merged_courses[id]['similarity']:
+            merged_courses[id] = course
+
+    # Agregar cursos del segundo array al diccionario
+    for course in courses_liked_recommendation:
+        id = course['id']
+        if id not in merged_courses or course['similarity'] > merged_courses[id]['similarity']:
+            merged_courses[id] = course
+
+    # Convertir el diccionario nuevamente en una lista
+    merged_courses_list = list(merged_courses.values())
+
+    # Ordenar la lista por similitud de mayor a menor
+    merged_courses_list = sorted(
+        merged_courses_list, key=lambda x: x['similarity'], reverse=True)
+    return merged_courses_list
