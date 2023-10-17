@@ -100,6 +100,20 @@ class EmoviesSpider(scrapy.Spider):
         # Concatenar y limpiar el texto de todos los elementos
         description = ' '.join(
             description_elements.xpath('string()').getall()).strip()
+        
+        if description.startswith("Descripción del curso"):
+            # Eliminar la subcadena "Descripción del curso" del principio de la descripción
+            description = description.replace("Descripción del curso", "", 1).strip()
+
+        # Lista de valores que se considerarán como nulos
+        null_values = ["Ninguno", "N/A", "Ementa:", "No aplica", "", "–", "NA", ".", "No requiere", "N / A", "n/a", "No", "N.A", "Ninguna", "Ementa: "]
+
+        # Asignar None si description está en la lista de valores nulos, de lo contrario, asignar el valor actual
+        description = None if description in null_values else description
+
+        # Asignar None si requirements está en la lista de valores nulos, de lo contrario, asignar el valor actual
+        requirements = None if requirements in null_values else requirements
+
 
         # Obtener el objeto de la respuesta original
         objeto = response.meta['objeto']
@@ -147,7 +161,9 @@ class EmoviesSpider(scrapy.Spider):
                     university=objeto['university'],
                     url=objeto['url'],
                     career=objeto['career'],
-                    level_id=level.id
+                    level_id=level.id,
+                    requirements=objeto['requirements'],
+                    description=objeto['description']
                 )
 
                 session.add(course)

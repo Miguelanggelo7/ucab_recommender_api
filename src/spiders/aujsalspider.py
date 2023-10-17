@@ -20,13 +20,16 @@ class AujsalSpider(scrapy.Spider):
                 for courses in universities.css('table tbody tr'):
                     course = courses.css('td::text').getall()
 
+                    startDate = self.convert_to_dd_mm_yyyy(course[4])
+                    endDate = self.convert_to_dd_mm_yyyy(course[5])
+
                     item = {
                         'title': course[1],
                         'type': course[0],
                         'career': course[2],
                         'university': university,
-                        'startDate': course[4],
-                        'endDate': course[5],
+                        'startDate': startDate,
+                        'endDate': endDate,
                         'url': courses.css('td a::attr(href)').get()
                     }
 
@@ -78,3 +81,32 @@ class AujsalSpider(scrapy.Spider):
                 session.add(course)
 
         session.commit()
+
+def convert_to_dd_mm_yyyy(self, date_string):
+        # Diccionario para mapear nombres de meses a números
+        months = {
+            "enero": "01",
+            "febrero": "02",
+            "marzo": "03",
+            "abril": "04",
+            "mayo": "05",
+            "junio": "06",
+            "julio": "07",
+            "agosto": "08",
+            "septiembre": "09",
+            "octubre": "10",
+            "noviembre": "11",
+            "diciembre": "12"
+        }
+
+        # Divide la cadena en palabras y convierte a minúsculas
+        parts = date_string.lower().split()
+
+        # Obtén el día, mes y año
+        day = parts[0]
+        month = months.get(parts[2])
+        year = parts[4]
+
+        # Formatea la fecha como DD/MM/YYYY
+        formatted_date = f"{day}/{month}/{year}"
+        return formatted_date

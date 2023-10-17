@@ -26,14 +26,17 @@ from apscheduler.schedulers.twisted import TwistedScheduler
 from src.tasks.my_cron import run_spiders
 from twisted.internet import reactor
 
+from src.routes.courses import courses_blueprint
+
+
 app = Flask(__name__)
 
 
-# configure_logging()
-# scheduler = TwistedScheduler()
-# scheduler.add_job(run_spiders, 'interval', seconds=30)
-# scheduler.start()
-# reactor.run()
+configure_logging()
+scheduler = TwistedScheduler()
+scheduler.add_job(run_spiders, 'interval', seconds=300)
+scheduler.start()
+reactor.run()
 
 
 # with app.app_context():
@@ -63,6 +66,8 @@ db.init_app(app)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(graduate_users_blueprint)
 app.register_blueprint(recommendation_blueprint)
+app.register_blueprint(courses_blueprint)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
