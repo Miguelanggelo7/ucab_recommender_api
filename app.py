@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from decouple import config
 from src.routes.auth import auth_blueprint
-from src.routes.users import users_blueprint
+from routes.graduate_users import graduate_users_blueprint
 from src.database.db import db
 from decouple import config
 
@@ -60,7 +60,7 @@ db.init_app(app)
 
 # Routes
 app.register_blueprint(auth_blueprint)
-app.register_blueprint(users_blueprint)
+app.register_blueprint(graduate_users_blueprint)
 
 if __name__ == '__main__':
     app.run(debug=True)
