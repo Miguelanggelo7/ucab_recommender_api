@@ -16,7 +16,7 @@ from sklearn.cluster import KMeans
 
 from src.utils.collaborative_filtering import binary_sub, binary_sum
 
-N_CLUSTERS = 5
+N_CLUSTERS = 2
 
 
 def content_filtering_process(user_skills, user_specializations):
@@ -199,8 +199,13 @@ def collavorative_based_in_liked_courses(current_user, skills, specializations):
         .group_by(UserLikes.course_id)\
         .order_by(func.count(UserLikes.course_id).desc()).all()
 
-    min_count = min(like.count for like in likes)
-    max_count = max(like.count for like in likes)
+    if likes:
+        min_count = min(like.count for like in likes)
+        max_count = max(like.count for like in likes)
+    else:
+        # Si la lista de likes está vacía, maneja el caso según tu lógica (por ejemplo, asignando valores predeterminados)
+        min_count = 0
+        max_count = 0
 
     courses_data = []
     for item in likes:

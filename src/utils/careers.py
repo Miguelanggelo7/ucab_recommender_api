@@ -51,4 +51,6 @@ careers = [
     "ingenieria, arquitectura, urbanismo y afines",
     "ingenieria de sistemas y computacion",
     "ing. en sistemas computacionales",
+    "especializacion en seguridad informatica",
+    "Ingeniería Matemática",
 ]

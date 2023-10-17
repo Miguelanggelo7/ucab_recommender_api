@@ -33,10 +33,10 @@ app = Flask(__name__)
 
 
 configure_logging()
-scheduler = TwistedScheduler()
-scheduler.add_job(run_spiders, 'interval', seconds=300)
-scheduler.start()
-reactor.run()
+# scheduler = TwistedScheduler()
+# scheduler.add_job(run_spiders, 'interval', seconds=300)
+# scheduler.start()
+# reactor.run()
 
 
 # with app.app_context():
