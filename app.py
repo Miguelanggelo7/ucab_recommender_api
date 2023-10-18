@@ -6,6 +6,7 @@ from decouple import config
 from src.routes.auth import auth_blueprint
 from src.routes.graduate_users import graduate_users_blueprint
 from src.routes.recommendation import recommendation_blueprint
+from src.routes.user_likes import user_likes_blueprint
 from src.database.db import db
 from decouple import config
 
@@ -67,6 +68,7 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(graduate_users_blueprint)
 app.register_blueprint(recommendation_blueprint)
 app.register_blueprint(courses_blueprint)
+app.register_blueprint(user_likes_blueprint)
 
 
 if __name__ == '__main__':

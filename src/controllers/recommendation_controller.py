@@ -12,25 +12,33 @@ from src.utils.careers import careers
 from src.utils.taxonomy import taxonomy
 from src.utils.content_recomendation import hierarchical_distance
 from sklearn.cluster import KMeans
-from sklearn.cluster import KMeans
+import string
 
 from src.utils.collaborative_filtering import binary_sub, binary_sum
 
-N_CLUSTERS = 2
+N_CLUSTERS = 5
 
 
-def content_filtering_process(user_skills, user_specializations):
+def content_filtering_process(current_user, user_skills, user_specializations):
     courses = Course.query.all()
     nlp = spacy.load("es_core_news_md")
 
     courses_data = []
     for course in courses:
+        like = UserLikes.query.filter_by(user_id=current_user.id, course_id=course.id).first()
+
         data = {
             "title": course.title,
             "career": course.career,
             "id": course.id,
             "description": course.description,
             "requirements": course.requirements,
+            "url": course.url,
+            "begin_date": course.begin_date,
+            "end_date": course.end_date,
+            "like": True if like is not None else False,
+            "university": course.university,
+            "level": course.level.name,
         }
 
         courses_data.append(data)
@@ -48,8 +56,19 @@ def content_filtering_process(user_skills, user_specializations):
         course_description = course["description"]
         course_requirements = course["requirements"]
 
+        # Manejo de valores nulos usando el operador de fusión de nulos (None coalescing operator)
+        course_title = course_title or ""
+        course_career = course_career or ""
+        course_description = course_description or ""
+        course_requirements = course_requirements or ""
+
+        course_title_clean = unidecode(course_title).lower().translate(str.maketrans("", "", string.punctuation))
+        course_career_clean = unidecode(course_career).lower().translate(str.maketrans("", "", string.punctuation))
+        course_description_clean = unidecode(course_description).lower().translate(str.maketrans("", "", string.punctuation))
+        course_requirements_clean = unidecode(course_requirements).lower().translate(str.maketrans("", "", string.punctuation))
+
         # Combinar título, carrera, descripción y requisitos en una cadena para el curso
-        combined_text = f"{course_title} {course_career} {course_description} {course_requirements}"
+        combined_text = f"{course_title_clean} {course_career_clean} {course_description_clean} {course_requirements_clean}"
         doc_combined_text = nlp(combined_text)
 
         # Calcular el vector para el texto combinado
@@ -80,6 +99,9 @@ def content_filtering_process(user_skills, user_specializations):
         # total_similarity = (1 - similarity_taxonomy)
 
         course["similarity"] = total_similarity
+
+        if (course["title"] == "MACHINE LEARNING"):
+            print(total_similarity)
 
     sorted_courses = sorted(
         courses_data, key=lambda x: x["similarity"], reverse=True)
@@ -150,7 +172,7 @@ def collaborative_based_in_graduate_users(current_user, skills, specializations)
             specializations_data.append(specialization.name)
         i += 1
 
-    sorted_courses = content_filtering_process(
+    sorted_courses = content_filtering_process(current_user,
         skills_data, specializations_data)
     return sorted_courses
 
@@ -210,12 +232,19 @@ def collavorative_based_in_liked_courses(current_user, skills, specializations):
     courses_data = []
     for item in likes:
         course = Course.query.get(item.course_id)
+        like = UserLikes.query.filter_by(user_id=current_user.id, course_id=course.id).first()
         data = {
             "title": course.title,
             "career": course.career,
             "id": course.id,
             "description": course.description,
             "requirements": course.requirements,
+            "url": course.url,
+            "like": True if like is not None else False,
+            "begin_date": course.begin_date,
+            "end_date": course.end_date,
+            "university": course.university,
+            "level": course.level.name,
             "count": item.count
         }
         courses_data.append(data)
@@ -256,7 +285,7 @@ def content_filtering(current_user):
     for specialization in current_user.specializations:
         user_specializations.append(specialization.name)
 
-    sorted_courses = content_filtering_process(
+    sorted_courses = content_filtering_process(current_user,
         user_skills, user_specializations)
 
     return sorted_courses
