@@ -10,6 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     session_token = db.Column(db.Text, default=None)
+    cluster_id = db.Column(db.Integer, default=None)
     level_id = db.Column(db.Integer, db.ForeignKey('levels.id'))
 
     # Relations

@@ -12,7 +12,7 @@ from src.utils.careers import careers
 from src.utils.taxonomy import taxonomy
 from src.utils.content_recomendation import hierarchical_distance
 from sklearn.cluster import KMeans
-from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 
 from src.utils.collaborative_filtering import binary_sub, binary_sum
 
@@ -279,6 +279,92 @@ def merge_content_filtering_with_graduate_users(current_user, skills, specializa
         courses_data, key=lambda x: x['similarity'], reverse=True)
 
     return courses_data
+
+
+def elbow_method_graduate_users(skills, specializations):
+    graduate_users = GraduateUser.query.all()
+    users_data = []
+    skills_len = len(skills)
+    specializations_len = len(specializations)
+
+    for user in graduate_users:
+        users_data.append({
+            'id': user.id,
+            'skills': [0] * skills_len,
+            'specializations': [0] * specializations_len,
+        })
+
+        i = 0
+        for skill in skills:
+            if skill in user.skills:
+                users_data[-1]["skills"][i] = 1
+            i += 1
+
+        i = 0
+        for specialization in specializations:
+            if specialization in user.specializations:
+                users_data[-1]["specializations"][i] = 1
+            i += 1
+
+    data = [user['skills'] + user['specializations'] for user in users_data]
+    inertia = []
+    combined_matrix = np.array(data)
+    max_lenght = len(users_data) + 1
+
+    for i in range(1, max_lenght):
+        kmeans = KMeans(n_clusters=i, random_state=0)
+        kmeans.fit(combined_matrix)
+        inertia.append(kmeans.inertia_)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, max_lenght), inertia, marker='o')
+    plt.title('Método del Codo')
+    plt.xlabel('Número de Clústeres')
+    plt.ylabel('Inercia')
+    plt.savefig("metodo_del_codo_egresados.png")
+
+
+def elbow_method_users(skills, specializations):
+    users = User.query.all()
+    users_data = []
+    skills_len = len(skills)
+    specializations_len = len(specializations)
+
+    for user in users:
+        users_data.append({
+            'id': user.id,
+            'skills': [0] * skills_len,
+            'specializations': [0] * specializations_len,
+        })
+
+        i = 0
+        for skill in skills:
+            if skill in user.skills:
+                users_data[-1]["skills"][i] = 1
+            i += 1
+
+        i = 0
+        for specialization in specializations:
+            if specialization in user.specializations:
+                users_data[-1]["specializations"][i] = 1
+            i += 1
+
+    data = [user['skills'] + user['specializations'] for user in users_data]
+    inertia = []
+    combined_matrix = np.array(data)
+    max_lenght = len(users_data) + 1
+
+    for i in range(1, max_lenght):
+        kmeans = KMeans(n_clusters=i, random_state=0)
+        kmeans.fit(combined_matrix)
+        inertia.append(kmeans.inertia_)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, max_lenght), inertia, marker='o')
+    plt.title('Método del Codo')
+    plt.xlabel('Número de Clústeres')
+    plt.ylabel('Inercia')
+    plt.savefig("metodo_del_codo_usuarios.png")
 
 
 def merge_courses(current_user, skills, specializations):
