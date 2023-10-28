@@ -59,7 +59,7 @@ taxonomy = {
             },
         },
         "inteligencia artificial": {
-            "aprendizaje automatico (machine learning)": {
+            "machine learning": {
                 "procesamiento del lenguaje natural",
                 "vision por computadora",
                 "algoritmos geneticos",
@@ -74,6 +74,7 @@ taxonomy = {
                 "perceptron",
                 "redes neuronales convolucionales",
                 "redes neuronales recurrentes",
+                "redes neuronales",
             },
         },
         "redes y comunicaciones": {
@@ -120,6 +121,7 @@ taxonomy = {
                 "amazon web services (aws)",
                 "azure",
                 "google cloud platform",
+                "cloud computing",
             },
             "servicios en la nube": {
                 "virtualizacion",
