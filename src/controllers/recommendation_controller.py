@@ -114,12 +114,25 @@ def content_filtering_process(current_user, user_skills, user_specializations):
     return sorted_courses
 
 
-def colaborative_filtering_process(data):
+def colaborative_filtering_process(data, name):
     combined_matrix = np.array(data)
+
     kmeans = KMeans(n_clusters=N_CLUSTERS)
     kmeans.fit(combined_matrix)
 
     cluster_tags = kmeans.labels_
+    centroids = kmeans.cluster_centers_
+
+    plt.figure(figsize=(6, 6))
+    colors = ['r', 'g', 'b', 'y', 'c', 'm']  # Colores para los clusters
+    for i in range(len(data)):
+        plt.scatter(data[i][0], data[i][1],
+                    color=colors[cluster_tags[i]], s=50)
+
+    plt.scatter(centroids[:, 0], centroids[:, 1],
+                marker='*', s=100, color='k', label='Centroids')
+
+    plt.savefig(name)
 
     return cluster_tags
 
@@ -148,7 +161,7 @@ def collaborative_based_in_graduate_users(current_user, skills, specializations)
             i += 1
 
     cluster_tags = colaborative_filtering_process(
-        [user['skills'] + user['specializations'] for user in users_data])
+        [user['skills'] + user['specializations'] for user in users_data], "graduate_users.png")
 
     i = 0
     for user in users_data:
@@ -207,7 +220,7 @@ def collavorative_based_in_liked_courses(current_user, skills, specializations):
             i += 1
 
     cluster_tags = colaborative_filtering_process(
-        [user['skills'] + user['specializations'] for user in users_data])
+        [user['skills'] + user['specializations'] for user in users_data], "liked_courses.png")
 
     i = 0
 
@@ -357,7 +370,7 @@ def elbow_method_graduate_users(skills, specializations):
         kmeans.fit(combined_matrix)
         inertia.append(kmeans.inertia_)
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(30, 6))
     plt.plot(range(1, max_lenght), inertia, marker='o')
     plt.title('Método del Codo')
     plt.xlabel('Número de Clústeres')
@@ -400,7 +413,7 @@ def elbow_method_users(skills, specializations):
         kmeans.fit(combined_matrix)
         inertia.append(kmeans.inertia_)
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(30, 6))
     plt.plot(range(1, max_lenght), inertia, marker='o')
     plt.title('Método del Codo')
     plt.xlabel('Número de Clústeres')
